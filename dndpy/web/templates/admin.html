@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dndpy — Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0d0d;
+    color: #c9d1d9;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 24px;
+  }
+  h1 {
+    color: #58a6ff;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: #484f58;
+    margin-bottom: 24px;
+  }
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-header {
+    color: #f0883e;
+    font-size: 13px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+  .count {
+    color: #484f58;
+    font-weight: normal;
+    font-size: 11px;
+    margin-left: 8px;
+  }
+  .json-block {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    overflow-x: auto;
+  }
+  .json-block:last-child {
+    margin-bottom: 0;
+  }
+  .k  { color: #79c0ff; }   /* key */
+  .s  { color: #a5d6ff; }   /* string value */
+  .n  { color: #f47067; }   /* number value */
+  .b  { color: #d2a8ff; }   /* bool/null */
+  .p  { color: #484f58; }   /* punctuation */
+  .indent { display: inline-block; width: 20px; }
+
+  .entity-id {
+    color: #484f58;
+    font-size: 11px;
+    float: right;
+  }
+  .entity-title {
+    color: #e6edf3;
+    font-weight: bold;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 6px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tag-pc       { background: #1f4a1f; color: #56d364; }
+  .tag-npc      { background: #3d1a00; color: #f0883e; }
+  .tag-familiar { background: #2a1a4a; color: #bc8cff; }
+  .tag-mount    { background: #1a2a3d; color: #58a6ff; }
+  .tag-companion{ background: #1a3a2a; color: #39d353; }
+  .tag-summoned { background: #3d1a1a; color: #f85149; }
+
+  .empty { color: #484f58; font-style: italic; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 2px 12px;
+    margin-top: 6px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+  }
+  .stat-key { color: #79c0ff; }
+  .stat-val { color: #a5d6ff; }
+  .stat-val-int { color: #f47067; }
+
+  .items-list {
+    margin-top: 6px;
+  }
+  .item-row {
+    color: #8b949e;
+  }
+  .item-row .item-name { color: #e6edf3; }
+  .item-row .item-qty  { color: #f47067; }
+
+  .sub-label {
+    color: #484f58;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>dndpy</h1>
+<div class="subtitle">Admin — full database state</div>
+
+<!-- RULESETS -->
+<div class="section">
+  <div class="section-header">
+    Rulesets
+    <span class="count">({{ data.rulesets | length }})</span>
+  </div>
+  {% if data.rulesets %}
+  <div class="json-block">
+    <span class="p">[</span><br>
+    {% for r in data.rulesets %}
+    <span class="indent"></span><span class="p">{</span>
+    <span class="k">"id"</span><span class="p">:</span> <span class="s">"{{ r.id }}"</span><span class="p">,</span>
+    <span class="k">"name"</span><span class="p">:</span> <span class="s">"{{ r.name }}"</span><span class="p">,</span>
+    <span class="k">"version"</span><span class="p">:</span> <span class="s">"{{ r.version }}"</span>
+    <span class="p">}</span>{% if not loop.last %}<span class="p">,</span>{% endif %}<br>
+    {% endfor %}
+    <span class="p">]</span>
+  </div>
+  {% else %}
+  <div class="json-block"><span class="empty">no rulesets registered</span></div>
+  {% endif %}
+</div>
+
+<!-- CAMPAIGNS -->
+<div class="section">
+  <div class="section-header">
+    Campaigns
+    <span class="count">({{ data.campaigns | length }})</span>
+  </div>
+  {% if data.campaigns %}
+    {% for c in data.campaigns %}
+    <div class="json-block">
+      <div class="entity-title">
+        {{ c.name }}
+        <span class="entity-id">#{{ c.id }}</span>
+      </div>
+      <span class="k">"ruleset_id"</span><span class="p">:</span> <span class="s">"{{ c.ruleset_id }}"</span><span class="p">,</span>
+      <span class="k">"description"</span><span class="p">:</span>
+        {% if c.description %}
+          <span class="s">"{{ c.description }}"</span>
+        {% else %}
+          <span class="b">null</span>
+        {% endif %}
+      <span class="p">,</span>
+      <span class="k">"created_at"</span><span class="p">:</span> <span class="s">"{{ c.created_at or '—' }}"</span>
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="json-block"><span class="empty">no campaigns</span></div>
+  {% endif %}
+</div>
+
+<!-- CHARACTERS -->
+<div class="section">
+  <div class="section-header">
+    Characters
+    <span class="count">({{ data.characters | length }})</span>
+  </div>
+  {% if data.characters %}
+    {% for ch in data.characters %}
+    <div class="json-block">
+      <div class="entity-title">
+        {{ ch.name }}
+        <span class="tag tag-{{ ch.character_type }}">{{ ch.character_type }}</span>
+        <span class="entity-id">#{{ ch.id }}</span>
+      </div>
+
+      <span class="k">"ruleset_id"</span><span class="p">:</span> <span class="s">"{{ ch.ruleset_id }}"</span><span class="p">,</span>
+      <span class="k">"campaign"</span><span class="p">:</span>
+        {% if ch.campaign %}
+          <span class="s">"{{ ch.campaign }}"</span>
+        {% else %}
+          <span class="b">null</span>
+        {% endif %}
+      <span class="p">,</span>
+      <span class="k">"owner"</span><span class="p">:</span>
+        {% if ch.owner %}
+          <span class="s">"{{ ch.owner }}"</span>
+        {% else %}
+          <span class="b">null</span>
+        {% endif %}
+
+      {% if ch.stats %}
+      <div class="sub-label">stats</div>
+      <div class="stats-grid">
+        {% for key, val in ch.stats.items() %}
+        <div class="stat-row">
+          <span class="stat-key">{{ key }}</span>
+          <span class="{% if val is number %}stat-val-int{% else %}stat-val{% endif %}">{{ val if val is not none else '—' }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="sub-label">stats</div>
+      <span class="empty">none</span>
+      {% endif %}
+
+      {% if ch['items'] %}
+      <div class="sub-label">items</div>
+      <div class="items-list">
+        {% for item in ch['items'] %}
+        <div class="item-row">
+          <span class="p">• </span>
+          <span class="item-name">{{ item.name }}</span>
+          <span class="p"> ×</span><span class="item-qty">{{ item.quantity }}</span>
+          {% if item.weight %}
+          <span class="p"> (</span><span>{{ item.weight }}</span><span class="p">)</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  {% else %}
+  <div class="json-block"><span class="empty">no characters</span></div>
+  {% endif %}
+</div>
+
+</body>
+</html>

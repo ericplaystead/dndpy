@@ -1,0 +1,6 @@
+data/dndpy.db
+log/*
+sql/*.db
+*.pyc
+venv/*
+.venv/*
